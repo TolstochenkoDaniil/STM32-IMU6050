@@ -1,6 +1,5 @@
 /*  
-	��������� ������� ���������� ���������� �� ������
-	� �������� ������������� ������
+	Обработка данных инерциального модуля с применением паспорта устройства и алгоритма ориентации
 */
 #include "algorithm_procedures.h"
 #include "stdlib.h"
@@ -32,7 +31,7 @@ int main(void)
 		fread(&tmp, sizeof(_SINT16), 1, infile);
 		pos = ftell(infile);
 		
-		if (tmp == 0xABCD)
+		if (tmp == 0xABCD) // Заголовок пакета
 		{
 			reading = 1;
 			fseek(infile, -2, SEEK_CUR);
@@ -47,11 +46,10 @@ int main(void)
 	{
 		parse_data();										  
 		
-		//alinement_set = 1;
 		if(!alinement_set)
 		{
 			bias_counter++;
-			sensor_alinement();	
+			sensor_alinement(); // Выставка
 		}
 	
 		if(alinement_set)
@@ -68,6 +66,11 @@ int main(void)
 			radial_correction();
 			calculation();
 			
+			// Формат записи в файле:
+			// время[с] | Крен[град] | Тангаж[град] | Курс[град] | \
+			// Угл.скор_x[град/с] | Угл.скор_y[град/с] | Угл.скор_z[град/с] | \
+			// Ускорение_x[м/с/с] | Ускорение_y[м/с/с] | Ускорение_z[м/с/с] | \
+			// Температура[град.Цельсия]
 			fprintf(output, "%5.2f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\t%9.4f\n",
 			t, OutData.Roll_deg, OutData.Pitch_deg, OutData.Heading_deg,
 			CalibData.OmegaB_deg_s[0], CalibData.OmegaB_deg_s[1], CalibData.OmegaB_deg_s[2],
